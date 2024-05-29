@@ -79,7 +79,16 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>de', vim.diagnostic.open_float, { desc = 'Show [D]iagnostic [E]rror messages' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+-- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.api.nvim_set_keymap('n', '<leader>q', ':lua ToggleQuickfix()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-S-j>', ':cnext<CR>', { desc = 'Next [Q]uickfix' })
+vim.keymap.set('n', '<C-S-k>', ':cprev<CR>', { desc = 'Previous [Q]uickfix' })
+vim.keymap.set('n', '<leader>x', ':lua CloseBuffer()<CR>', { noremap = true, silent = true })
+
+-- vim.api.nvim_set_keymap('n', '<leader>q', ':copen<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<leader>n', ':cnext<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<leader>p', ':cprev<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<leader>c', ':cclose<CR>', { noremap = true, silent = true })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -821,7 +830,21 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons',
     },
     config = function()
-      require('nvim-tree').setup {}
+      require('nvim-tree').setup {
+        view = {
+          float = {
+            -- enable = true,
+            -- open_win_config = {
+            --   relative = 'editor',
+            --   border = 'rounded',
+            -- },
+          },
+        },
+
+        update_focused_file = {
+          enable = true,
+        },
+      }
       vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { desc = '[N]vimTreeToggle' })
     end,
   },
@@ -849,3 +872,22 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+function ToggleQuickfix()
+  local quickfix_open = false
+  for _, win in pairs(vim.fn.getwininfo()) do
+    if win.quickfix == 1 then
+      quickfix_open = true
+      break
+    end
+  end
+  if quickfix_open then
+    vim.cmd 'cclose'
+  else
+    vim.cmd 'copen'
+  end
+end
+
+function CloseBuffer()
+  vim.cmd 'bd'
+end
