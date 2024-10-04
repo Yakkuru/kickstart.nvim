@@ -73,6 +73,10 @@ vim.opt.scrolloff = 10
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+--vim.api.nvim_set_keymap('x', '>', '>gv', { noremap = true, silent = true })
+--vim.api.nvim_set_keymap('x', '<', '<gv', { noremap = true, silent = true })
+vim.keymap.set('x', '>', '>gv', { noremap = true, silent = true })
+vim.keymap.set('x', '<', '<gv', { noremap = true, silent = true })
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -164,7 +168,29 @@ require('lazy').setup({
   --    require('Comment').setup({})
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  {
+    'numToStr/Comment.nvim',
+    opts = {},
+    config = function()
+      require('Comment').setup()
+
+      local api = require 'Comment.api'
+      local esc = vim.api.nvim_replace_termcodes('<ESC>', true, false, true)
+
+      vim.keymap.set('n', '<C-/>', function()
+        api.toggle.linewise.current()
+      end, { noremap = true, silent = true })
+
+      vim.keymap.set('x', '<C-/>', function()
+        -- vim.api.nvim_feedkeys(esc, 'nx', false)
+        -- api.toggle.linewise(vim.fn.visualmode())
+
+        vim.api.nvim_feedkeys(esc, 'nx', false)
+        api.locked 'toggle.linewise'(vim.fn.visualmode())
+        vim.cmd 'normal! gv'
+      end, { noremap = true, silent = true })
+    end,
+  },
 
   {
     'supermaven-inc/supermaven-nvim',
